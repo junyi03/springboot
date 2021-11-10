@@ -10,7 +10,17 @@ import java.util.Optional;
 
 
 public interface CourseRepository extends JpaRepository<Course,Integer> {
+
+    Page<Course> findCourseByCoach_CoachId(Integer coachId, Pageable pageable);
+
+
+
+
     Optional<List<Course>> findCourseByPartOfBody(String partOfBody);   // <List<Course>>指定list只放course
     Page<Course> findByPartOfBody(String partOfBody, Pageable pageable);
+
+
+
     Optional<List<Course>> findCoursesByCourseNameContaining(String keyword);   //一個interface
+
 }

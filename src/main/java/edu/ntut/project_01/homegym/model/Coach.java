@@ -1,6 +1,7 @@
 package edu.ntut.project_01.homegym.model;
 
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
@@ -36,9 +37,11 @@ public class Coach {
     @Column(name = "apply_time")
     private Date applyTime;
 
+    @JsonIgnore
     @OneToOne(mappedBy = "coach")
     private Member member;
 
+    @JsonIgnore
     @OneToMany(mappedBy = "coach", cascade = CascadeType.PERSIST, fetch = FetchType.EAGER)
     private Set<Course> courses = new HashSet<>();
 

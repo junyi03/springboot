@@ -46,9 +46,11 @@ public class Course {
     @JoinColumn(name = "coach_id")
     private Coach coach;
 
+    @JsonIgnore
     @OneToMany(mappedBy = "course", cascade = CascadeType.PERSIST, fetch = FetchType.LAZY)
     private Set<CourseComment> courseComments = new HashSet<>();
 
+    @JsonIgnore
     @OneToMany(mappedBy = "course", cascade = CascadeType.PERSIST, fetch = FetchType.LAZY)
     private Set<FQA> fqas = new HashSet<>();
 

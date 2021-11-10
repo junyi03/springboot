@@ -11,18 +11,6 @@ import java.util.List;
 import java.util.Optional;
 
 public interface CoachRepository extends JpaRepository<Coach,Integer> {
-/*
-    Optional<Set<Course>> findByCoachId(Integer coachId);
-
-    Optional<List<Course>> findCourseByCourseName(String courseName);*/
-
-    Optional<List<Course>> findCourseByCoachIdAndCourseName(Integer coachId,String courseName);
-
-    Optional<List<Course>> findCourseByCourseName(String courseName);
-
-    Page<Course> findByCourseName(String courseName, Pageable pageable);
-
-    Optional<List<Course>> findCoursesByCourseNameContaining(String keyword);
 
 
 }

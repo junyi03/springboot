@@ -23,11 +23,11 @@ public class CoachAreaController {
     private Integer size;
 
     @Autowired
-    private CoachService coachService;
+    private CourseService courseService;
 
 
 
-
+    /*
     @GetMapping("/coacharea/mycourse")
     public Optional<List<Course>> courseName(@RequestParam(required = false) Integer coachId, @RequestParam(required = false) String courseName){
         return coachService.findCourseByCoachIdAndCourseName(coachId,courseName);
@@ -42,32 +42,30 @@ public class CoachAreaController {
 
 
 
-    //課程分頁
-    ResponseEntity<Map<String, Object>> CoachAreaCourse(@RequestParam(required = false) Integer page, @RequestParam(required = false) String courseName) {
 
-        final Integer totalPage;
+*/
+
+    @GetMapping("/coacharea/mycourse")
+    ResponseEntity<Map<String, Object>> coachmycourse(@RequestParam(required = false) Integer page, @RequestParam Integer coachId){
+
         Page<Course> showCourse;
         Map<String, Object> storeDetail;
 
-        if (page != null && page > 0) {
-            if (courseName == null) {
-                totalPage = coachService.getCoursesTotalPageByFilter(courseName, size);
-                if (page <= totalPage) {
-                    showCourse = coachService.findCourseByFilter(courseName, page-1, size);
-                    storeDetail = new HashMap<>();
-                    storeDetail.put("currentPage", showCourse.getContent());
-                    storeDetail.put("totalPage", showCourse.getTotalPages());
-                    return ResponseEntity.ok().body(storeDetail);
-                }
-            }
-            throw new NullPointerException("查無此頁面");
-        } else {
-            showCourse = coachService.findCourseByFilter(courseName, 0, size);
-            storeDetail = new HashMap<>();
-            storeDetail.put("currentPage", showCourse.getContent());
-            storeDetail.put("totalPage", showCourse.getTotalPages());
-            return ResponseEntity.ok().body(storeDetail);
-        }
+
+        showCourse = courseService.findCourseByCoachArea(coachId, 0, size);
+        storeDetail = new HashMap<>();
+        storeDetail.put("currentPage", showCourse.getContent());
+        storeDetail.put("totalPage", showCourse.getTotalPages());
+        return ResponseEntity.ok().body(storeDetail);
     }
+
+
+
+    @GetMapping("/coacharea/keyword")
+    public ResponseEntity<List<Course>> keyword(@RequestParam(required = false) String keyword){
+        return courseService.findCoursesByKeyword(keyword);
+    }
+
+
 
 }

@@ -6,20 +6,12 @@ import org.springframework.http.ResponseEntity;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 
 public interface CoachService {
-/*
-
-    Set<Course> findByCoachId (Integer coachId);
-    Optional<List<Course>> findByCourseName(String courseName);
-*/
 
 
 
-
-
-    ResponseEntity<List<Course>> findCoursesByKeyword(String keyword);  //找關鍵字
+   /* ResponseEntity<List<Course>> findCoursesByKeyword(String keyword);  //找關鍵字
 
     Optional<List<Course>> findCourseByCoachIdAndCourseName(Integer coachId,String courseName);   //從課程找教練id
 
@@ -28,6 +20,6 @@ public interface CoachService {
 
     Page<Course> findCourseByFilter(String courseName, Integer page, Integer size);
 
-    Integer getCoursesTotalPageByFilter(String courseName, Integer size);
+    Integer getCoursesTotalPageByFilter(String courseName, Integer size);*/
 
 }

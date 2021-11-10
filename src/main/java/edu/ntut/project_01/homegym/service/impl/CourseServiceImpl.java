@@ -56,4 +56,14 @@ public class  CourseServiceImpl implements CourseService {
         throw new QueryException("查無此關鍵字影片");
     }
 
+
+
+
+    @Override
+    public Page<Course> findCourseByCoachArea(Integer coachId, Integer page, Integer size) {
+        PageRequest pageRequest = PageRequest.of(page, size);
+        return courseRepository.findCourseByCoach_CoachId(coachId, pageRequest);
+    }
+
+
 }

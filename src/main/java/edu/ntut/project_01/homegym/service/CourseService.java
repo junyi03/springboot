@@ -5,6 +5,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 
 import java.util.List;
+import java.util.Optional;
 
 
 public interface CourseService {
@@ -22,5 +23,11 @@ public interface CourseService {
 
     //透過關鍵字篩選課程列表
     ResponseEntity<List<Course>> findCoursesByKeyword(String keyword);
+
+
+
+    Page<Course> findCourseByCoachArea (Integer coachId, Integer page, Integer size);
+
+
 
 }

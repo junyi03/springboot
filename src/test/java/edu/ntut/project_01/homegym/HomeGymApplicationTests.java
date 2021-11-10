@@ -12,6 +12,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.test.context.junit4.SpringRunner;
@@ -129,9 +131,16 @@ class HomeGymApplicationTests {
 
     @Transactional
     @Test
-    public void courseSearch(){
+    void courseByCoach(){
+        PageRequest pageRequest = PageRequest.of(0,2);
+        Page<Course> courses = courseRepository.findCourseByCoach_CoachId(1, pageRequest);
+        List<Course> courseList = courses.getContent();
+        for(Course c : courseList){
+            System.out.println(c.getCourseName());
+        }
 
     }
+
 
 
 

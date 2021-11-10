@@ -24,7 +24,7 @@ public class MyCourseController {
     private MemberService memberService;
 
     @Autowired
-    public MyCourseController(MemberService memberService, MemberRepository memberRepository, CourseRepository courseRepository) {
+    public MyCourseController(MemberService memberService) {
         this.memberService = memberService;
     }
 

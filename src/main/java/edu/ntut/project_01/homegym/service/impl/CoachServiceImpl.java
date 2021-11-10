@@ -3,6 +3,7 @@ package edu.ntut.project_01.homegym.service.impl;
 import edu.ntut.project_01.homegym.model.Coach;
 import edu.ntut.project_01.homegym.model.Course;
 import edu.ntut.project_01.homegym.repository.CoachRepository;
+import edu.ntut.project_01.homegym.repository.CourseRepository;
 import edu.ntut.project_01.homegym.service.CoachService;
 import org.hibernate.QueryException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,9 +19,10 @@ import java.util.Optional;
 @Transactional
 @Service
 public class CoachServiceImpl implements CoachService {
-
+/*
     @Autowired
     private CoachRepository coachRepository;
+    private CourseRepository courseRepository;
     private Coach coach;
 
     @Override
@@ -54,7 +56,7 @@ public class CoachServiceImpl implements CoachService {
             return ResponseEntity.ok().body( courseListByKeyword.get());
         }
         throw new QueryException("查無此關鍵字課程");
-    }
+    }*/
 
 
 
