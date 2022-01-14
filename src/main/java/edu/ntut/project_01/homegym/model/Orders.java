@@ -1,11 +1,9 @@
 package edu.ntut.project_01.homegym.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import javax.persistence.*;
-import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -17,15 +15,14 @@ public class Orders {
 
     @Id
     @Column(name = "order_id")
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer orderId;
+    private String orderId;
     @Column(name = "total_amt")
     private Integer totalPrice;
     @Column(name = "order_status")
     private String orderStatus;
-    @CreatedDate
+
     @Column(name = "order_time")
-    private Date orderTime;
+    private String orderTime;
 
     @ManyToOne
     @JsonIgnore
@@ -39,7 +36,14 @@ public class Orders {
     public Orders() {
     }
 
-    public Orders(Integer orderId, Integer totalPrice, String orderStatus, Date orderTime, Member member, Set<Course> courses) {
+    public Orders(String orderId, Integer totalPrice, Member member, Set<Course> courses) {
+        this.orderId = orderId;
+        this.totalPrice = totalPrice;
+        this.member = member;
+        this.courses = courses;
+    }
+
+    public Orders(String orderId, Integer totalPrice, String orderStatus, String orderTime, Member member, Set<Course> courses) {
         this.orderId = orderId;
         this.totalPrice = totalPrice;
         this.orderStatus = orderStatus;
@@ -48,11 +52,11 @@ public class Orders {
         this.courses = courses;
     }
 
-    public Integer getOrderId() {
+    public String getOrderId() {
         return orderId;
     }
 
-    public void setOrderId(Integer orderId) {
+    public void setOrderId(String orderId) {
         this.orderId = orderId;
     }
 
@@ -72,11 +76,11 @@ public class Orders {
         this.orderStatus = orderStatus;
     }
 
-    public Date getOrderTime() {
+    public String getOrderTime() {
         return orderTime;
     }
 
-    public void setOrderTime(Date orderTime) {
+    public void setOrderTime(String orderTime) {
         this.orderTime = orderTime;
     }
 

@@ -1,5 +1,6 @@
 package edu.ntut.project_01.homegym.model;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
@@ -8,6 +9,7 @@ import javax.persistence.*;
 
 import java.util.Date;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 @Entity
@@ -24,39 +26,47 @@ public class Course {
     private String mimeType;
     @Column(name = "course_name")
     private String courseName;
-    @Lob
-    private char[] courseInfo;
-    private String category;
+    @Column(name = "course_info")
+    private String courseInfo;
+
     @Column(name = "part_of_body")
     private String partOfBody;
-    @Column(name = "course_image")
+    @Column(name = "course_image", columnDefinition = "LONGTEXT")
     private String courseImage;
     @CreatedDate
     @Column(name = "upload_time")
-    private Date uploadTime;
+    private String uploadTime;
     private Integer price;
     private String equipment;
     private String level;
     private Integer pass;
-    private	Integer checked;
+    private Integer checked;
     @Column(name = "check_time")
-    private Date checkTime;
+    private String checkTime;
 
+    @Transient
+    private String coachName;
+
+    @Transient
+    private Map<String, Object> starAndComment;
+
+    @JsonBackReference
     @ManyToOne
     @JoinColumn(name = "coach_id")
     private Coach coach;
 
-    @JsonIgnore
+    @JsonBackReference
     @OneToMany(mappedBy = "course", cascade = CascadeType.PERSIST, fetch = FetchType.LAZY)
+
     private Set<CourseComment> courseComments = new HashSet<>();
 
-    @JsonIgnore
+    @JsonBackReference
     @OneToMany(mappedBy = "course", cascade = CascadeType.PERSIST, fetch = FetchType.LAZY)
     private Set<FQA> fqas = new HashSet<>();
 
+    @JsonBackReference
     @ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    @JsonIgnore
-    @JoinTable(name = "orderItem",
+    @JoinTable(name = "order_item",
             joinColumns = {
                     @JoinColumn(name = "course_id", nullable = false)},
             inverseJoinColumns = {
@@ -67,13 +77,27 @@ public class Course {
     public Course() {
     }
 
-    public Course(Integer courseId, String coursePath, String mimeType, String courseName, char[] courseInfo, String category, String partOfBody, String courseImage, Date uploadTime, Integer price, String equipment, String level, Integer pass, Integer checked, Date checkTime, Coach coach, Set<CourseComment> courseComments, Set<FQA> fqas, Set<Orders> orders) {
+    public Course(String coursePath, String courseName, String courseInfo, String partOfBody, String courseImage, String uploadTime, Integer price, String equipment, String level, Coach coach) {
+        this.coursePath = coursePath;
+        this.courseName = courseName;
+        this.courseInfo = courseInfo;
+        this.partOfBody = partOfBody;
+        this.courseImage = courseImage;
+        this.uploadTime = uploadTime;
+        this.price = price;
+        this.equipment = equipment;
+        this.level = level;
+        this.pass = 0;
+        this.checked = 0;
+        this.coach = coach;
+    }
+
+    public Course(Integer courseId, String coursePath, String mimeType, String courseName, String courseInfo, String partOfBody, String courseImage, String uploadTime, Integer price, String equipment, String level, Integer pass, Integer checked, String checkTime, String coachName, Map<String, Object> starAndComment, Coach coach, Set<CourseComment> courseComments, Set<FQA> fqas, Set<Orders> orders) {
         this.courseId = courseId;
         this.coursePath = coursePath;
         this.mimeType = mimeType;
         this.courseName = courseName;
         this.courseInfo = courseInfo;
-        this.category = category;
         this.partOfBody = partOfBody;
         this.courseImage = courseImage;
         this.uploadTime = uploadTime;
@@ -83,10 +107,28 @@ public class Course {
         this.pass = pass;
         this.checked = checked;
         this.checkTime = checkTime;
+        this.coachName = coachName;
+        this.starAndComment = starAndComment;
         this.coach = coach;
         this.courseComments = courseComments;
         this.fqas = fqas;
         this.orders = orders;
+    }
+
+    public Map<String, Object> getStarAndComment() {
+        return starAndComment;
+    }
+
+    public void setStarAndComment(Map<String, Object> starAndComment) {
+        this.starAndComment = starAndComment;
+    }
+
+    public String getCoachName() {
+        return coachName;
+    }
+
+    public void setCoachName(String coachName) {
+        this.coachName = coachName;
     }
 
     public Integer getCourseId() {
@@ -121,20 +163,12 @@ public class Course {
         this.courseName = courseName;
     }
 
-    public char[] getCourseInfo() {
+    public String getCourseInfo() {
         return courseInfo;
     }
 
-    public void setCourseInfo(char[] courseInfo) {
+    public void setCourseInfo(String courseInfo) {
         this.courseInfo = courseInfo;
-    }
-
-    public String getCategory() {
-        return category;
-    }
-
-    public void setCategory(String category) {
-        this.category = category;
     }
 
     public String getPartOfBody() {
@@ -153,11 +187,11 @@ public class Course {
         this.courseImage = courseImage;
     }
 
-    public Date getUploadTime() {
+    public String getUploadTime() {
         return uploadTime;
     }
 
-    public void setUploadTime(Date uploadTime) {
+    public void setUploadTime(String uploadTime) {
         this.uploadTime = uploadTime;
     }
 
@@ -201,11 +235,11 @@ public class Course {
         this.checked = checked;
     }
 
-    public Date getCheckTime() {
+    public String getCheckTime() {
         return checkTime;
     }
 
-    public void setCheckTime(Date checkTime) {
+    public void setCheckTime(String checkTime) {
         this.checkTime = checkTime;
     }
 
@@ -240,4 +274,6 @@ public class Course {
     public void setOrders(Set<Orders> orders) {
         this.orders = orders;
     }
+
+
 }

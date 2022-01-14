@@ -1,121 +1,138 @@
 package edu.ntut.project_01.homegym.controller;
 
 import edu.ntut.project_01.homegym.model.AuthRequest;
-import edu.ntut.project_01.homegym.model.Course;
 import edu.ntut.project_01.homegym.model.Member;
 
+import edu.ntut.project_01.homegym.model.Visitor;
 import edu.ntut.project_01.homegym.service.AuthService;
 import edu.ntut.project_01.homegym.service.CourseService;
 import edu.ntut.project_01.homegym.service.MemberService;
+import edu.ntut.project_01.homegym.service.VisitorService;
+import edu.ntut.project_01.homegym.util.MailUtil;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
+import javax.mail.MessagingException;
+import javax.servlet.http.HttpServletRequest;
+import java.util.HashMap;
+import java.util.Map;
 
-
+@Slf4j
 @RestController
 public class IndexController {
 
-    private AuthService authService;
-    private MemberService memberService;
-    private CourseService courseService;
+    @Value("${jwt.header}")
+    private String authorization;
+    @Value("${course.countsPerPage}")
+    private Integer SIZE;
+
+    private Map<String, Object> response;
+
+    private final AuthService authService;
+    private final MemberService memberService;
+    private final VisitorService visitorService;
+    private final CourseService courseService;
+    private final MailUtil mailUtil;
+    private final PasswordEncoder passwordEncoder;
+
+
+
+
 
     @Autowired
-    public IndexController(AuthService authService, MemberService memberService) {
+    public IndexController(AuthService authService, MemberService memberService, VisitorService visitorService, CourseService courseService, MailUtil mailUtil,PasswordEncoder passwordEncoder) {
         this.authService = authService;
         this.memberService = memberService;
+        this.visitorService = visitorService;
+        this.courseService = courseService;
+        this.mailUtil = mailUtil;
+        this.passwordEncoder = passwordEncoder;
     }
 
-    //測試用(如果沒得到驗證TOKEN是無法訪問此路徑)
-    @GetMapping("/hello")
-    public String hello() {
-        return "hello world";
+    //檢查JWT
+    @GetMapping("/checkStatus")
+    public Map<String, Object> checkStatus(HttpServletRequest request) {
+        response = new HashMap<>();
+        Member member = memberService.findMemberByToken(request.getHeader(authorization));
+        if(member.getCoach()!=null){
+            response.put("coachChecked", member.getCoach().getChecked());
+            response.put("coachPass", member.getCoach().getPass());
+        }
+        response.put("name", member.getName());
+        response.put("mimeType", member.getMimeType());
+        response.put("memberImage", member.getMemberImage());
+        return response;
     }
 
-    //測試用(身份驗證阻擋測試)
-    @GetMapping("/hello/RoleAuthorizationTest1")
-    @PreAuthorize("hasRole('MEMBER') OR hasRole('COACH')")
-    public String bothOfRole() {
-        return "教練、會員都看得到喔～～～";
+    //註冊(加入Security)(OK)
+    @PostMapping("/regist")
+    public ResponseEntity<Map<String, Object>> registrations(@RequestBody Member member) throws MessagingException {
+        return ResponseEntity.ok().body(authService.register(member));
     }
 
-    //測試用(身份驗證阻擋測試)
-    @GetMapping("/hello/RoleAuthorizationTest2")
-    @PreAuthorize("hasRole('MEMBER')")
-    public String onlyMember() {
-        return "只有會員進得來";
+    //重寄驗證信(OK)
+    @GetMapping("/registrations/memberVerification/sendAgain/{memberId}")
+    public ResponseEntity<String> sendVerificationAgain(@PathVariable Integer memberId) throws MessagingException {
+        return ResponseEntity.ok().body(authService.resendMail(memberId));
     }
 
-    //測試用(身份驗證阻擋測試)
-    @GetMapping("/hello/RoleAuthorizationTest3")
-    @PreAuthorize("hasRole('COACH')")
-    public String onlyCoach() {
-        return "只有教練進得來";
-    }
-
-    //註冊(加入Security)
-    @PostMapping("/registrations")
-    public ResponseEntity<Member> registrations(@RequestBody Member member) {
-        return authService.register(member);
-    }
-
-    //驗證
-    @GetMapping("/registration/memberVerification")
-    public ResponseEntity<String> updateMemberStatus(@RequestParam String code) {
-        return authService.updateStatus(code);
-    }
-
-    @GetMapping("/registration/memberVerification/sendAgain/{memberId}")
-    public ResponseEntity<String> sendVerificationAgain(@PathVariable Integer memberId) {
-        return authService.resendMail(memberId);
-    }
-
-    //登入(加入Security)
+    //登入(加入Security)(OK)
     @PostMapping("/login")
-    public ResponseEntity<String> createAuthenticationToken(@RequestBody AuthRequest authRequest) throws AuthenticationException {
-        return authService.login(authRequest.getUsername(), authRequest.getPassword());
+    public ResponseEntity<Map<String, Object>> createAuthenticationToken(@RequestBody AuthRequest authRequest) throws AuthenticationException {
+        log.info("用戶登入====> 帳號： " + authRequest.getUsername() + "密碼： " + authRequest.getPassword());
+
+        return ResponseEntity.ok().body(authService.login(authRequest.getUsername(), authRequest.getPassword()));
     }
 
-    @GetMapping("/keyword")                                     // 第一個"/" 代表根目錄(類似首頁)
-    public ResponseEntity<List<Course>> keyword(@RequestParam(required = false) String keyword){              //@RequestParam 抓網址問號以後的東西
-        return courseService.findCoursesByKeyword(keyword);
+    //關鍵字查詢
+    @GetMapping("/keyword")
+    public ResponseEntity<Map<String, Object>> keyword(@RequestParam String keyword, @RequestParam(required = false) Integer page) {
+        response = new HashMap<>();
+        if (page == null || page < 1) {
+            page = 1;
+        }
+        response.put("courseList", courseService.findCoursesByKeyword(keyword, page - 1, SIZE).getContent());
+        response.put("totalPage", courseService.findCoursesByKeyword(keyword, page - 1, SIZE).getTotalPages());
 
+        return ResponseEntity.ok().body(response);
+    }
+
+    @PostMapping("/addMessage")
+    public void addMessage(@RequestBody Visitor visitor) {
+        visitorService.addMessage(visitor);
+    }
+
+    //忘記密碼-驗證帳號、寄信
+    @PostMapping("/forget/checkMail")
+    public ResponseEntity<String> checkMailAndSend(@RequestBody Map<String,String> memberEmail) throws MessagingException {
+        if (memberService.findMemberByEmail(memberEmail.get("memberEmail")).isPresent()) {
+            mailUtil.sendResetPassword(memberEmail.get("memberEmail"));
+            return ResponseEntity.ok().body("已寄信");
+        }
+        return ResponseEntity.ok().body("您尚未成為我們的會員");
     }
 
 
-    //註冊(舊版)
-//    @PostMapping("/registration")
-//    public ResponseEntity<String> createMember(@RequestBody Member member) {
-//        return memberService.createMember(member);
-//    }
+    //新密碼設定
+    @PostMapping("/forget/reset")
+    public ResponseEntity<String> resetPassword(@RequestBody Map<String, String> password) {
+        String newPassword = password.get("newPassword");
+        String regex = "^(?=.*\\d)(?=.*[a-z])(?=.*[A-Z]).{6,20}$";
+        if (newPassword.equals(password.get("newPasswordCheck"))) {
+            if (newPassword.matches(regex)) {
+                Member member = memberService.findMemberByEmail(password.get("memberEmail")).orElseThrow();
+                member.setPassword(passwordEncoder.encode(newPassword));
+                memberService.update(member);
+                return ResponseEntity.ok().body("修改成功");
+            }
+            return ResponseEntity.ok().body("您的密碼必須超過5個字元且包含英文字母大小寫和數字");
+        }
+        return ResponseEntity.ok().body("您輸入的新密碼和確認密碼不相符");
+    }
 
-    //登入(舊版)
-//    @PostMapping("/login")
-//    public ResponseEntity<Member> memberLogin(@RequestBody Member member){
-//        String email = member.getEmail();
-//        String password = member.getPassword();
-//        return memberService.login(email,password);
-//    }
-
-    //註冊資料傳來非Json值
-//    @PostMapping("/memberSave")
-//    public Member insert(@RequestParam Map<String, String> param, Model model){
-//        Member member = new Member();
-//        member.setName(param.get("name"));
-//        member.setEmail(param.get("email"));
-//        member.setPassword(param.get("password"));
-//        SimpleDateFormat sdf  = new  SimpleDateFormat("yyyy-MM-dd");
-//        try {
-//            member.setBirthday(new java.sql.Date(sdf.parse(param.get("birthday")).getTime()));
-//        } catch (ParseException e) {
-//            e.printStackTrace();
-//        }
-//        member.setPhone(param.get("phone"));
-//        memberRepository.save(member);
-//        model.addAttribute("member",member);
-//        return member;
-//    }
 }

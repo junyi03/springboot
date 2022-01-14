@@ -1,95 +1,44 @@
 package edu.ntut.project_01.homegym.service.impl;
 
 import edu.ntut.project_01.homegym.model.Coach;
-import edu.ntut.project_01.homegym.model.Course;
 import edu.ntut.project_01.homegym.repository.CoachRepository;
-import edu.ntut.project_01.homegym.repository.CourseRepository;
 import edu.ntut.project_01.homegym.service.CoachService;
-import org.hibernate.QueryException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-import java.util.Optional;
-
-@Transactional
 @Service
+@Transactional
 public class CoachServiceImpl implements CoachService {
-/*
+
+
+    private final CoachRepository coachRepository;
+
     @Autowired
-    private CoachRepository coachRepository;
-    private CourseRepository courseRepository;
-    private Coach coach;
-
-    @Override
-    public Page<Course> findCourseByFilter(String courseName, Integer page, Integer size){
-        PageRequest pageRequest = PageRequest.of(page, size);
-        return coachRepository.findByCourseName(courseName,pageRequest);
+    public CoachServiceImpl(CoachRepository coachRepository) {
+        this.coachRepository = coachRepository;
     }
 
     @Override
-    public Integer getCoursesTotalPageByFilter(String courseName, Integer size){
-        if(coachRepository.findCourseByCourseName(courseName).isPresent()){
-            return (int)Math.ceil(coachRepository.findCourseByCourseName(courseName).get().size()/(double)size);
-        }
-        throw new QueryException("查無相關課程");
+    public String apply(Coach coach){
+        coachRepository.save(coach);
+        return "申請成功";
     }
 
-
     @Override
-    public Optional<List<Course>> findCourseByCoachIdAndCourseName(Integer coachId,String courseName) {
-        if (coachRepository.findCourseByCoachIdAndCourseName(coachId, courseName).isPresent()) {
-            return coachRepository.findCourseByCoachIdAndCourseName(coachId, courseName);
+    public String edit(Coach coach, Integer coachId) {
+        Coach theCoach = coachRepository.findById(coachId).orElseThrow();
+        theCoach.setSkill(coach.getSkill());
+        theCoach.setExperience(coach.getExperience());
+        theCoach.setCoachInfo(coach.getCoachInfo());
+
+        if(coach.getCoachImage() != null&& !coach.getCoachImage().equals(theCoach.getCoachImage())){
+            theCoach.setCoachImage(coach.getCoachImage());
         }
-        throw new RuntimeException("請上傳課程");
+
+        coachRepository.save(theCoach);
+        return "修改成功";
     }
-
-
-    @Override
-    public ResponseEntity<List<Course>> findCoursesByKeyword(String keyword) {
-        Optional<List<Course>> courseListByKeyword =  coachRepository.findCoursesByCourseNameContaining(keyword);
-        if (courseListByKeyword.isPresent() && courseListByKeyword.get().size() != 0) {
-            return ResponseEntity.ok().body( courseListByKeyword.get());
-        }
-        throw new QueryException("查無此關鍵字課程");
-    }*/
-
-
-
-
-
-
-    /*@Override
-    public Set<Course> findByCoachId(Integer coachId) {
-
-        return coachRepository.findByCoachId(coachId);
-    }*/
-
-
-    /*@Override
-    public Optional<List<Course>> findCourseByCourseName(String courseName) {
-
-        Optional<List<Course>> coach = coachRepository.findCourseByCourseName(courseName);
-        if (courseName == null) {
-
-
-        }
-        return coachRepository.findCourseByCourseName(courseName);
-    }*/
-
-
-   /* @Override
-    public Integer getAllCoursesTotalPage(Integer size) {
-        return (int)Math.ceil(coachRepository.findAll().size()/(double)size);
-    }*/
-
-
 
 
 }
-
-

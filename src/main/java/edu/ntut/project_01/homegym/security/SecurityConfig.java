@@ -8,6 +8,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -36,21 +37,24 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     protected void configure(HttpSecurity http) throws Exception {
         http.csrf().disable()
                 .authorizeRequests()
-//                .antMatchers(
-//                        "/",
-//                        "/registrations",
-//                        "/registration/**",
-//                        "/login",
-//                        "/store",
-//                        "/store/**"
-//                ).permitAll()
-                .antMatchers("/**/**").permitAll()
-                .anyRequest().authenticated()
+                .antMatchers("/coachArea/**",
+                        "/coachApply/**",
+                        "/memberArea/**",
+                    "/myCourses/**",
+                        "/checkout").authenticated()
+                .antMatchers("/**","/forget/**").permitAll()
                 .and()
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 .and()
                 .addFilterBefore(authenticationTokenFilterBean(), UsernamePasswordAuthenticationFilter.class)
-                .headers().cacheControl(); // 禁用缓存
+                .headers().cacheControl();// 禁用缓存
+    }
+
+
+    @Override
+    public void configure(WebSecurity web) throws Exception {
+//解決靜態資源被攔截的問題
+        web.ignoring().antMatchers("/certification/**","/coachImages/**","/Vue/**","/js/**","/scss/**","/imag/**","/css/**");
     }
 
     @Override

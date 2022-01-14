@@ -1,12 +1,11 @@
 package edu.ntut.project_01.homegym.model;
 
-import org.springframework.data.annotation.CreatedDate;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import javax.persistence.*;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
+
 
 @Entity
 @EntityListeners(AuditingEntityListener.class)
@@ -19,31 +18,63 @@ public class FQA {
     private Integer fqaId;
     @Column(name = "fqa_content")
     private String fqaContent;
-    @CreatedDate
-    @Column(name = "fqa_create_time")
-    private Date fqaCreateTime;
 
+    @Column(name = "fqa_create_time")
+    private String fqaCreateTime;
+
+    @Transient
+    private String memberName;
+
+    @Transient
+    @Lob
+    private byte[] memberImage;
+
+    @Transient
+    private String mineType;
+
+    @JsonIgnore
     @ManyToOne
     @JoinColumn(name = "member_id")
     private Member member;
 
+    @JsonIgnore
     @ManyToOne
     @JoinColumn(name = "course_id")
     private Course course;
 
+//    @JsonIgnore
     @OneToMany(mappedBy = "fqa", cascade = CascadeType.PERSIST, fetch = FetchType.EAGER)
     private Set<FQAReply> fqaReplies = new HashSet<>();
 
     public FQA() {
     }
 
-    public FQA(Integer fqaId, String fqaContent, Date fqaCreateTime, Member member, Course course, Set<FQAReply> fqaReplies) {
+    public FQA(Integer fqaId, String fqaContent, String fqaCreateTime, String memberName, byte[] memberImage, String mineType, Member member, Course course, Set<FQAReply> fqaReplies) {
         this.fqaId = fqaId;
         this.fqaContent = fqaContent;
         this.fqaCreateTime = fqaCreateTime;
+        this.memberName = memberName;
+        this.memberImage = memberImage;
+        this.mineType = mineType;
         this.member = member;
         this.course = course;
         this.fqaReplies = fqaReplies;
+    }
+
+    public String getMineType() {
+        return mineType;
+    }
+
+    public void setMineType(String mineType) {
+        this.mineType = mineType;
+    }
+
+    public byte[] getMemberImage() {
+        return memberImage;
+    }
+
+    public void setMemberImage(byte[] memberImage) {
+        this.memberImage = memberImage;
     }
 
     public Integer getFqaId() {
@@ -62,11 +93,11 @@ public class FQA {
         this.fqaContent = fqaContent;
     }
 
-    public Date getFqaCreateTime() {
+    public String getFqaCreateTime() {
         return fqaCreateTime;
     }
 
-    public void setFqaCreateTime(Date fqaCreateTime) {
+    public void setFqaCreateTime(String fqaCreateTime) {
         this.fqaCreateTime = fqaCreateTime;
     }
 
@@ -76,6 +107,14 @@ public class FQA {
 
     public void setMember(Member member) {
         this.member = member;
+    }
+
+    public String getMemberName() {
+        return memberName;
+    }
+
+    public void setMemberName(String memberName) {
+        this.memberName = memberName;
     }
 
     public Course getCourse() {

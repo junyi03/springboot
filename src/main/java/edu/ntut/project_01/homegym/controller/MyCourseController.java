@@ -1,43 +1,41 @@
 package edu.ntut.project_01.homegym.controller;
 
-import edu.ntut.project_01.homegym.model.Course;
-import edu.ntut.project_01.homegym.repository.CourseRepository;
-import edu.ntut.project_01.homegym.repository.MemberRepository;
+
 import edu.ntut.project_01.homegym.service.MemberService;
+import edu.ntut.project_01.homegym.service.OrderService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.List;
+import javax.servlet.http.HttpServletRequest;
+import java.util.HashMap;
 import java.util.Map;
 
 @RestController
 public class MyCourseController {
 
-    @Value("${course.countsPerPage}")
-    private Integer pageSize;
+    @Value("${jwt.header}")
+    private String requestHeader;
 
     private MemberService memberService;
+    private OrderService orderService;
 
     @Autowired
-    public MyCourseController(MemberService memberService) {
+    public MyCourseController(MemberService memberService, OrderService orderService) {
         this.memberService = memberService;
+        this.orderService = orderService;
     }
 
-    //已買課程分頁
-    @GetMapping("/myCourse/allCourse/{memberId}")
-    ResponseEntity<Map<String, Object>> myCourse(@PathVariable Integer memberId, @RequestParam(required = false) Integer page) {
-        if (page != null) {
-            if (page > 0) {
-                return memberService.findMyCourses(memberId, page, pageSize);
-            }
-            throw new IllegalArgumentException("頁數不得小於、等於0");
-        }
-        return memberService.findMyCourses(memberId, 1, pageSize);
+    //已買課程分頁(OK)
+    @GetMapping("/myCourses/allCourse")
+    ResponseEntity<Map<String, Object>> myCourse(HttpServletRequest request) {
+        Integer memberId = memberService.findMemberByToken(request.getHeader(requestHeader)).getMemberId();
+        Map<String, Object> courseResponse = new HashMap<>();
+        courseResponse.put("courseList", orderService.okStatusCourses(orderService.findOrdersByMemberIdAndOKStatus(memberId, "付款成功")));
+
+        return ResponseEntity.ok().body(courseResponse);
 
     }
 }
